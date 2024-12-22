@@ -1,26 +1,28 @@
+import React, { useState } from 'react';
 import {
   Button,
   FlatList,
   Image,
-  ListRenderItem,
   StyleSheet,
   Text,
   TouchableOpacity,
   View,
 } from 'react-native';
-
 import { Product, getProducts } from '@/utils/api';
-import { useState } from 'react';
 
-export default function TabTwoScreen() {
+const TabTwoScreen: React.FC = () => {
   const [products, setProducts] = useState<Product[]>([]);
 
   const loadProducts = async () => {
-    const products = await getProducts();
-    setProducts(products);
+    try {
+      const data = await getProducts();
+      setProducts(data);
+    } catch (error) {
+      console.error('Failed to load products:', error);
+    }
   };
 
-  const renderProductItem: ListRenderItem<Product> = ({ item }) => (
+  const ProductItem: React.FC<{ item: Product }> = ({ item }) => (
     <TouchableOpacity style={styles.productItem} testID="product-item">
       <Image style={styles.productImage} source={{ uri: item.image }} />
       <Text style={styles.productName}>{item.title}</Text>
@@ -32,20 +34,24 @@ export default function TabTwoScreen() {
     <View style={styles.container}>
       <Button title="Load Products" onPress={loadProducts} />
       <FlatList
-        role="list"
         data={products}
-        renderItem={renderProductItem}
+        renderItem={({ item }) => <ProductItem item={item} />}
         keyExtractor={(item) => item.id.toString()}
         numColumns={2}
+        contentContainerStyle={styles.listContent}
       />
     </View>
   );
-}
+};
 
 const styles = StyleSheet.create({
   container: {
     flex: 1,
     backgroundColor: '#f2f2f2',
+    padding: 10,
+  },
+  listContent: {
+    paddingBottom: 20,
   },
   productItem: {
     flex: 1,
@@ -64,6 +70,7 @@ const styles = StyleSheet.create({
     marginTop: 8,
     fontSize: 14,
     fontWeight: 'bold',
+    textAlign: 'center',
   },
   productPrice: {
     marginTop: 4,
@@ -71,3 +78,5 @@ const styles = StyleSheet.create({
     color: '#666',
   },
 });
+
+export default TabTwoScreen;
